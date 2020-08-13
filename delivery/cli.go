@@ -15,25 +15,7 @@ func (c *Cli) init(uc useCase.CarUseCase) error {
 	fmt.Println("Application Started")
 	fmt.Printf("%s\n", strings.Repeat("-", 40))
 	c.useCase = uc
-
-	car01 := entity.Car{
-		CarDetail: entity.CarDetail{
-			Car:      "Nissan",
-			CarModel: "Livina",
-			CarColor: "Dark Blue",
-		},
-	}
-	car02 := entity.Car{
-		CarDetail: entity.CarDetail{
-			Car:      "Honda",
-			CarModel: "Brio",
-			CarColor: "Black",
-		},
-	}
-	c.RegisterCar(&car01)
-	c.RegisterCar(&car02)
 	c.PrintAllCarCollection()
-
 	return nil
 }
 

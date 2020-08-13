@@ -10,7 +10,7 @@ type app struct {
 }
 
 func (a app) run() {
-	carrepo := repository.NewTempRepository()
+	carrepo := repository.NewFakeAPIRepository()
 	carusecase := useCase.NewCarUseCase(carrepo)
 	delivery.NewCliDelivery(carusecase)
 }

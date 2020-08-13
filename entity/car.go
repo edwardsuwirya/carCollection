@@ -15,8 +15,16 @@ func (c *Car) ToString() string {
 }
 
 type CarDetail struct {
-	Id       int
-	Car      string
-	CarModel string
-	CarColor string
+	Id           int    `json:"id"`
+	Car          string `json:"car"`
+	CarModel     string `json:"car_model"`
+	CarColor     string `json:"car_color"`
+	CarModelYear int    `json:"car_model_year"`
+	CarVin       string `json:"car_vin"`
+	Price        string `json:"price"`
+	Availability bool   `json:"availability"`
+}
+
+type Cars struct {
+	Cars []CarDetail
 }
