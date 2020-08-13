@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/edwardsuwirya/carCollection/config"
 	"github.com/edwardsuwirya/carCollection/entity"
@@ -26,17 +27,16 @@ func NewFakeAPIRepository(url string, timeout int) CarRepository {
 func (t *FakeApiRepository) FindAll() ([]*entity.Car, error) {
 	urlPath := fmt.Sprintf("%s/cars", t.url)
 	config.Logger.Debug(urlPath)
-	req, err := http.NewRequest("GET", urlPath, nil)
-	resp, err := t.httpClient.Do(req)
-	if err != nil {
+	req, _ := http.NewRequest("GET", urlPath, nil)
+	resp, _ := t.httpClient.Do(req)
+	if resp.StatusCode != http.StatusOK {
 		config.Logger.WithField("HTTP-Client", "Status").Fatal("Can not make GET /cars request")
-		return nil, err
+		return nil, errors.New("Can not make GET /cars request")
 	}
-	//data, _ := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 
 	var carResponse entity.Cars
-	err = json.NewDecoder(resp.Body).Decode(&carResponse)
+	err := json.NewDecoder(resp.Body).Decode(&carResponse)
 	if err != nil {
 		config.Logger.WithField("HTTP-Client", "Status").Fatal("Failed to parse JSON")
 		return nil, err
