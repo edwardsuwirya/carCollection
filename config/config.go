@@ -11,14 +11,14 @@ var (
 	cfgViper *viper.Viper
 )
 
-type config struct {
+type Config struct {
 	configFilePath string
 }
 
-func NewConfig(configFilePath string) *config {
-	return &config{configFilePath: configFilePath}
+func NewConfig(configFilePath string) *Config {
+	return &Config{configFilePath: configFilePath}
 }
-func (c *config) Config() *viper.Viper {
+func (c *Config) Config() *viper.Viper {
 	if _, err := os.Stat(c.configFilePath); err != nil {
 		Logger.WithField("Server", "Status").Fatal("Config file path is not found")
 		panic(err)
@@ -33,7 +33,7 @@ func (c *config) Config() *viper.Viper {
 	return cfgViper
 }
 
-func (c *config) Logger() {
+func (c *Config) Logger() {
 	level := cfgViper.GetString("log_level")
 	logFormat := new(logrus.JSONFormatter)
 	var logLevel, err = logrus.ParseLevel(level)
@@ -47,6 +47,6 @@ func (c *config) Logger() {
 	}
 }
 
-func (c *config) GetConfigValue(key string) string {
+func (c *Config) GetConfigValue(key string) string {
 	return c.Config().GetString(key)
 }

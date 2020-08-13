@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/edwardsuwirya/carCollection/config"
 	"github.com/edwardsuwirya/carCollection/delivery"
 	"github.com/edwardsuwirya/carCollection/repository"
 	"github.com/edwardsuwirya/carCollection/useCase"
+	"github.com/gorilla/mux"
 	"github.com/urfave/cli/v2"
-	"log"
+	"net/http"
 	"os"
 	"strconv"
 )
@@ -18,13 +20,28 @@ const (
 )
 
 type app struct {
+	appConfig *config.Config
 }
 
-func (a app) runFakeApi(configFilePath string) {
-	cfg := config.NewConfig(configFilePath)
-	to, _ := strconv.Atoi(cfg.GetConfigValue("fake_api_timeout"))
+func (a app) runServer() {
+	listeningAddress := fmt.Sprintf("%s:%s", a.appConfig.GetConfigValue("host"), a.appConfig.GetConfigValue("port"))
+	config.Logger.Debug(fmt.Sprintf("Server runs on %s", listeningAddress))
+	to, _ := strconv.Atoi(a.appConfig.GetConfigValue("fake_api_timeout"))
 
-	carrepo := repository.NewFakeAPIRepository(cfg.GetConfigValue("fake_api_url"), to)
+	carrepo := repository.NewFakeAPIRepository(a.appConfig.GetConfigValue("fake_api_url"), to)
+	carusecase := useCase.NewCarUseCase(carrepo)
+	r := mux.NewRouter()
+	delivery.NewRestServer(r, carusecase)
+	if err := http.ListenAndServe(listeningAddress, r); err != nil {
+		panic(err)
+	}
+}
+
+func (a app) runFakeApi() {
+	config.Logger.Debug("Run Fake API")
+	to, _ := strconv.Atoi(a.appConfig.GetConfigValue("fake_api_timeout"))
+
+	carrepo := repository.NewFakeAPIRepository(a.appConfig.GetConfigValue("fake_api_url"), to)
 	carusecase := useCase.NewCarUseCase(carrepo)
 	delivery.NewCliDelivery(carusecase)
 }
@@ -35,8 +52,11 @@ func (a app) runTemp() {
 	delivery.NewCliDelivery(carusecase)
 }
 
-func newApp() *app {
-	return &app{}
+func newApp(configPath string) *app {
+	cfg := config.NewConfig(configPath)
+	return &app{
+		cfg,
+	}
 }
 
 func main() {
@@ -59,8 +79,16 @@ func main() {
 				Aliases: []string{"f"},
 				Usage:   "Run with Fake API",
 				Action: func(c *cli.Context) error {
-					config.Logger.Debug("Run Fake API")
-					newApp().runFakeApi(c.String("config"))
+					newApp(c.String("config")).runFakeApi()
+					return nil
+				},
+			},
+			{
+				Name:    "server",
+				Aliases: []string{"s"},
+				Usage:   "Run server mode",
+				Action: func(c *cli.Context) error {
+					newApp(c.String("config")).runServer()
 					return nil
 				},
 			},
@@ -69,7 +97,7 @@ func main() {
 				Aliases: []string{"t"},
 				Usage:   "Run with Temporary Slice",
 				Action: func(c *cli.Context) error {
-					newApp().runTemp()
+					newApp(c.String("config")).runTemp()
 					return nil
 				},
 			},
@@ -77,7 +105,7 @@ func main() {
 	}
 	err := appConfig.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 }
