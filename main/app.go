@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
+	"strconv"
 )
 
 const (
@@ -21,7 +22,9 @@ type app struct {
 
 func (a app) runFakeApi(configFilePath string) {
 	cfg := config.NewConfig(configFilePath)
-	carrepo := repository.NewFakeAPIRepository(cfg.GetConfigValue("fake_api_url"))
+	to, _ := strconv.Atoi(cfg.GetConfigValue("fake_api_timeout"))
+
+	carrepo := repository.NewFakeAPIRepository(cfg.GetConfigValue("fake_api_url"), to)
 	carusecase := useCase.NewCarUseCase(carrepo)
 	delivery.NewCliDelivery(carusecase)
 }
@@ -37,7 +40,6 @@ func newApp() *app {
 }
 
 func main() {
-
 	appConfig := &cli.App{
 		Name:    AppName,
 		Usage:   AppTagLine,
@@ -57,6 +59,7 @@ func main() {
 				Aliases: []string{"f"},
 				Usage:   "Run with Fake API",
 				Action: func(c *cli.Context) error {
+					config.Logger.Debug("Run Fake API")
 					newApp().runFakeApi(c.String("config"))
 					return nil
 				},
