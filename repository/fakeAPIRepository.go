@@ -2,21 +2,25 @@ package repository
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/edwardsuwirya/carCollection/entity"
 	"math/rand"
 	"net/http"
 )
 
 type FakeApiRepository struct {
+	url string
 }
 
-func NewFakeAPIRepository() CarRepository {
-	return &FakeApiRepository{}
+func NewFakeAPIRepository(url string) CarRepository {
+	return &FakeApiRepository{
+		url,
+	}
 }
 
 func (t *FakeApiRepository) FindAll() ([]*entity.Car, error) {
 	var defaultClient = &http.Client{}
-	req, err := http.NewRequest("GET", "https://myfakeapi.com/api/cars", nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/cars", t.url), nil)
 	resp, err := (*defaultClient).Do(req)
 	if err != nil {
 		return nil, err
@@ -27,7 +31,10 @@ func (t *FakeApiRepository) FindAll() ([]*entity.Car, error) {
 		return nil, err
 	}
 	var carResponse entity.Cars
-	json.NewDecoder(resp.Body).Decode(&carResponse)
+	err = json.NewDecoder(resp.Body).Decode(&carResponse)
+	if err != nil {
+		return nil, err
+	}
 	var result []*entity.Car
 	for _, cm := range carResponse.Cars {
 		result = append(result, &entity.Car{CarDetail: entity.CarDetail{
