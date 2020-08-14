@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -8,7 +9,7 @@ import (
 
 var (
 	Logger   logrus.Logger
-	cfgViper *viper.Viper
+	CfgViper *viper.Viper
 )
 
 type Config struct {
@@ -20,7 +21,7 @@ func NewConfig(configFilePath string) *Config {
 }
 func (c *Config) Config() *viper.Viper {
 	if _, err := os.Stat(c.configFilePath); err != nil {
-		Logger.WithField("Server", "Status").Fatal("Config file path is not found")
+		Logger.WithField("Application", "Status").Fatal("Config file path is not found")
 		panic(err)
 	}
 	viper.SetConfigFile(c.configFilePath)
@@ -28,13 +29,14 @@ func (c *Config) Config() *viper.Viper {
 		panic(err)
 	}
 
-	cfgViper = viper.GetViper()
+	CfgViper = viper.GetViper()
 	c.Logger()
-	return cfgViper
+	return CfgViper
 }
 
 func (c *Config) Logger() {
-	level := cfgViper.GetString("log_level")
+	level := CfgViper.GetString("log_level")
+	fmt.Println(level)
 	logFormat := new(logrus.JSONFormatter)
 	var logLevel, err = logrus.ParseLevel(level)
 	if err != nil {

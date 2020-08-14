@@ -1,16 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/edwardsuwirya/carCollection/config"
 	"github.com/edwardsuwirya/carCollection/delivery"
-	"github.com/edwardsuwirya/carCollection/repository"
-	"github.com/edwardsuwirya/carCollection/useCase"
-	"github.com/gorilla/mux"
 	"github.com/urfave/cli/v2"
-	"net/http"
 	"os"
-	"strconv"
 )
 
 const (
@@ -24,39 +18,25 @@ type app struct {
 }
 
 func (a app) runServer() {
-	listeningAddress := fmt.Sprintf("%s:%s", a.appConfig.GetConfigValue("host"), a.appConfig.GetConfigValue("port"))
-	config.Logger.Debug(fmt.Sprintf("Server runs on %s", listeningAddress))
-	to, _ := strconv.Atoi(a.appConfig.GetConfigValue("fake_api_timeout"))
-
-	carrepo := repository.NewFakeAPIRepository(a.appConfig.GetConfigValue("fake_api_url"), to)
-	carusecase := useCase.NewCarUseCase(carrepo)
-	r := mux.NewRouter()
-	delivery.NewRestServer(r, carusecase)
-	if err := http.ListenAndServe(listeningAddress, r); err != nil {
-		panic(err)
-	}
+	a.run(delivery.NewRestServer(a.appConfig))
 }
 
 func (a app) runFakeApi() {
-	config.Logger.Debug("Run Fake API")
-	to, _ := strconv.Atoi(a.appConfig.GetConfigValue("fake_api_timeout"))
-
-	carrepo := repository.NewFakeAPIRepository(a.appConfig.GetConfigValue("fake_api_url"), to)
-	carusecase := useCase.NewCarUseCase(carrepo)
-	delivery.NewCliDelivery(carusecase)
+	a.run(delivery.NewCliDelivery(a.appConfig))
 }
 
 func (a app) runTemp() {
-	carrepo := repository.NewTempRepository()
-	carusecase := useCase.NewCarUseCase(carrepo)
-	delivery.NewCliDelivery(carusecase)
+	a.run(delivery.NewCliDeliveryTemp(a.appConfig))
 }
 
 func newApp(configPath string) *app {
 	cfg := config.NewConfig(configPath)
-	return &app{
-		cfg,
-	}
+	cfg.Config()
+	return &app{appConfig: cfg}
+}
+
+func (a app) run(delivery delivery.CarDelivery) {
+	delivery.Run()
 }
 
 func main() {

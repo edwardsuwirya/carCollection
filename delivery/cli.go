@@ -2,8 +2,11 @@ package delivery
 
 import (
 	"fmt"
+	"github.com/edwardsuwirya/carCollection/config"
 	"github.com/edwardsuwirya/carCollection/entity"
+	"github.com/edwardsuwirya/carCollection/repository"
 	"github.com/edwardsuwirya/carCollection/useCase"
+	"strconv"
 	"strings"
 )
 
@@ -11,19 +14,13 @@ type Cli struct {
 	useCase useCase.CarUseCase
 }
 
-func (c *Cli) init(uc useCase.CarUseCase) error {
-	fmt.Println("Application Started")
-	fmt.Printf("%s\n", strings.Repeat("-", 40))
-	c.useCase = uc
-	c.PrintAllCarCollection()
-	return nil
-}
-
 func (c *Cli) RegisterCar(car *entity.Car) {
-	newCar, err := c.useCase.RegisterCar(car)
-	if err != nil {
-		fmt.Println(err)
-	}
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	newCar, _ := c.useCase.RegisterCar(car)
 	fmt.Printf("Success register : %v\n", *newCar)
 }
 func (c *Cli) PrintAllCarCollection() {
@@ -42,11 +39,37 @@ func (c *Cli) PrintAllCarCollection() {
 	}
 }
 
-func NewCliDelivery(useCase useCase.CarUseCase) CarDelivery {
-	cli := new(Cli)
-	err := cli.init(useCase)
-	if err != nil {
-		panic("Application failed")
+func NewCliDelivery(c *config.Config) CarDelivery {
+	config.Logger.Debug("Run Fake API")
+	to, _ := strconv.Atoi(c.GetConfigValue("fake_api_timeout"))
+	carrepo := repository.NewFakeAPIRepository(c.GetConfigValue("fake_api_url"), to)
+	carusecase := useCase.NewCarUseCase(carrepo)
+	return &Cli{
+		useCase: carusecase,
 	}
+}
+
+func NewCliDeliveryTemp(c *config.Config) CarDelivery {
+	config.Logger.Debug("Run CLI Temp")
+	carrepo := repository.NewTempRepository()
+	carusecase := useCase.NewCarUseCase(carrepo)
+	cli := &Cli{
+		useCase: carusecase,
+	}
+	car01 := entity.Car{CarDetail: entity.CarDetail{
+		Car:          "",
+		CarModel:     "Brio",
+		CarColor:     "",
+		CarModelYear: 1900,
+		CarVin:       "",
+		Price:        "",
+		Availability: false,
+	}}
+	cli.RegisterCar(&car01)
 	return cli
+}
+
+func (c *Cli) Run() {
+	c.PrintAllCarCollection()
+
 }

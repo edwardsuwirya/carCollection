@@ -1,6 +1,7 @@
 package useCase
 
 import (
+	"github.com/edwardsuwirya/carCollection/config"
 	"github.com/edwardsuwirya/carCollection/entity"
 	"github.com/edwardsuwirya/carCollection/repository"
 )
@@ -18,6 +19,10 @@ func NewCarUseCase(repo repository.CarRepository) CarUseCase {
 	return &CarUseCaseImplementation{repo}
 }
 func (c *CarUseCaseImplementation) RegisterCar(car *entity.Car) (*entity.Car, error) {
+	if err := car.Validate(); err != nil {
+		config.Logger.WithField("Car", "Registration").Error(err)
+		return nil, err
+	}
 	car, err := c.repo.Create(car)
 	if err != nil {
 		return nil, err

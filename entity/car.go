@@ -1,9 +1,23 @@
 package entity
 
-import "fmt"
+import (
+	"fmt"
+	validation "github.com/go-ozzo/ozzo-validation"
+)
 
 type Car struct {
-	CarDetail CarDetail
+	CarDetail
+}
+
+func (cd *Car) Validate() error {
+	//return validation.Errors{
+	//	"CarName":  validation.Validate(cd.CarDetail.Car, validation.Required),
+	//	"CarModel": validation.Validate(cd.CarDetail.CarModel, validation.Required),
+	//	"Year":     validation.Validate(cd.CarDetail.CarModelYear, validation.Required),
+	//}.Filter()
+	return validation.ValidateStruct(cd,
+		validation.Field(&cd.Car, validation.Required.Error("Nama Mobil Kosong")),
+	)
 }
 
 func (c *Car) ToString() string {
