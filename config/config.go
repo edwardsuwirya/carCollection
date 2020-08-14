@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -17,7 +16,9 @@ type Config struct {
 }
 
 func NewConfig(configFilePath string) *Config {
-	return &Config{configFilePath: configFilePath}
+	c := Config{configFilePath: configFilePath}
+	c.Config()
+	return &c
 }
 func (c *Config) Config() *viper.Viper {
 	if _, err := os.Stat(c.configFilePath); err != nil {
@@ -36,7 +37,6 @@ func (c *Config) Config() *viper.Viper {
 
 func (c *Config) Logger() {
 	level := CfgViper.GetString("log_level")
-	fmt.Println(level)
 	logFormat := new(logrus.JSONFormatter)
 	var logLevel, err = logrus.ParseLevel(level)
 	if err != nil {

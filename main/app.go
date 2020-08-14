@@ -30,9 +30,7 @@ func (a app) runTemp() {
 }
 
 func newApp(configPath string) *app {
-	cfg := config.NewConfig(configPath)
-	cfg.Config()
-	return &app{appConfig: cfg}
+	return &app{appConfig: config.NewConfig(configPath)}
 }
 
 func (a app) run(delivery delivery.CarDelivery) {
