@@ -1,8 +1,8 @@
 package delivery
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/edwardsuwirya/carCollection/appHttpUtil"
 	"github.com/edwardsuwirya/carCollection/config"
 	"github.com/edwardsuwirya/carCollection/repository"
 	"github.com/edwardsuwirya/carCollection/useCase"
@@ -15,6 +15,7 @@ type Server struct {
 	useCase          useCase.CarUseCase
 	router           *mux.Router
 	listeningAddress string
+	apiResponse      appHttpUtil.HttpResponseBuilder
 }
 
 func (s *Server) initRouter() error {
@@ -23,12 +24,13 @@ func (s *Server) initRouter() error {
 }
 
 func (s *Server) carCollectionHandler(w http.ResponseWriter, r *http.Request) {
-	coll, _ := s.useCase.GetCarCollection()
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(coll)
+	coll, err := s.useCase.GetCarCollection()
+
 	if err != nil {
-		config.Logger.WithField("Rest-Server", "Status").Fatal("Can not parse json")
+		s.apiResponse.Error(w, 200, appHttpUtil.NewErrorMessage(100, "Can not get car collection"))
+
 	}
+	s.apiResponse.Data(w, 200, "Success", coll)
 }
 func NewRestServer(c *config.Config) CarDelivery {
 	listeningAddress := fmt.Sprintf("%s:%s", c.GetConfigValue("host"), c.GetConfigValue("port"))
@@ -39,6 +41,7 @@ func NewRestServer(c *config.Config) CarDelivery {
 		useCase:          carusecase,
 		router:           mux.NewRouter(),
 		listeningAddress: listeningAddress,
+		apiResponse:      appHttpUtil.NewDefaultJSONResponder(),
 	}
 }
 
