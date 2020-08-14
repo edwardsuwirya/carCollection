@@ -25,12 +25,11 @@ func (s *Server) initRouter() error {
 
 func (s *Server) carCollectionHandler(w http.ResponseWriter, r *http.Request) {
 	coll, err := s.useCase.GetCarCollection()
-
 	if err != nil {
 		s.apiResponse.Error(w, 200, appHttpUtil.NewErrorMessage(100, "Can not get car collection"))
-
+	} else {
+		s.apiResponse.Data(w, 200, "Success", coll)
 	}
-	s.apiResponse.Data(w, 200, "Success", coll)
 }
 func NewRestServer(c *config.Config) CarDelivery {
 	listeningAddress := fmt.Sprintf("%s:%s", c.GetConfigValue("host"), c.GetConfigValue("port"))

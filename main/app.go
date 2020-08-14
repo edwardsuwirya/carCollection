@@ -29,6 +29,7 @@ func (a app) runTemp() {
 	a.run(delivery.NewCliDeliveryTemp(a.appConfig))
 }
 
+//constructor entry point
 func newApp(configPath string) *app {
 	return &app{appConfig: config.NewConfig(configPath)}
 }

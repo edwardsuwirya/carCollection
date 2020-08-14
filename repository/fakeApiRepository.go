@@ -30,7 +30,7 @@ func (t *FakeApiRepository) FindAll() ([]*entity.Car, error) {
 	req, _ := http.NewRequest("GET", urlPath, nil)
 	resp, _ := t.httpClient.Do(req)
 	if resp.StatusCode != http.StatusOK {
-		config.Logger.WithField("HTTP-Client", "Status").Fatal("Can not make GET /cars request")
+		config.Logger.WithField("HTTP-Client", "Status").Error("Can not make GET /cars request")
 		return nil, errors.New("Can not make GET /cars request")
 	}
 	defer resp.Body.Close()
