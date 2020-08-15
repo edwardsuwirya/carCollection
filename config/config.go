@@ -17,26 +17,23 @@ type Config struct {
 
 func NewConfig(configFilePath string) *Config {
 	c := Config{configFilePath: configFilePath}
-	c.Config()
+	c.init()
 	return &c
 }
-func (c *Config) Config() *viper.Viper {
-	if _, err := os.Stat(c.configFilePath); err != nil {
-		Logger.WithField("Application", "Status").Fatal("Config file path is not found")
-		panic(err)
-	}
+
+func (c *Config) init() *viper.Viper {
 	viper.SetConfigFile(c.configFilePath)
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}
 
 	CfgViper = viper.GetViper()
-	c.Logger()
+	level := CfgViper.GetString("log_level")
+	c.logger(level)
 	return CfgViper
 }
 
-func (c *Config) Logger() {
-	level := CfgViper.GetString("log_level")
+func (c *Config) logger(level string) {
 	logFormat := new(logrus.JSONFormatter)
 	var logLevel, err = logrus.ParseLevel(level)
 	if err != nil {
@@ -50,5 +47,5 @@ func (c *Config) Logger() {
 }
 
 func (c *Config) GetConfigValue(key string) string {
-	return c.Config().GetString(key)
+	return CfgViper.GetString(key)
 }

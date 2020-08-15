@@ -18,7 +18,12 @@ func (t *TempRepository) FindAll() ([]*entity.Car, error) {
 }
 
 func (t *TempRepository) Find(id int) (*entity.Car, error) {
-	panic("implement me")
+	for _, c := range t.repo {
+		if c.Id == id {
+			return c, nil
+		}
+	}
+	return nil, nil
 }
 
 func (t *TempRepository) Create(car *entity.Car) (*entity.Car, error) {

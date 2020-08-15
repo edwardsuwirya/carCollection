@@ -31,7 +31,8 @@ func (a app) runTemp() {
 
 //constructor entry point
 func newApp(configPath string) *app {
-	return &app{appConfig: config.NewConfig(configPath)}
+	c := config.NewConfig(configPath)
+	return &app{appConfig: c}
 }
 
 func (a app) run(delivery delivery.CarDelivery) {
