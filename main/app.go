@@ -28,6 +28,9 @@ func (a app) runFakeApi() {
 func (a app) runTemp() {
 	a.run(delivery.NewCliDeliveryTemp(a.appConfig))
 }
+func (a app) runCloud() {
+	a.run(delivery.NewCliDeliveryCloud(a.appConfig))
+}
 
 //constructor entry point
 func newApp(configPath string) *app {
@@ -78,6 +81,15 @@ func main() {
 				Usage:   "Run with Temporary Slice",
 				Action: func(c *cli.Context) error {
 					newApp(c.String("config")).runTemp()
+					return nil
+				},
+			},
+			{
+				Name:    "runcloud",
+				Aliases: []string{"c"},
+				Usage:   "Run with Cloud Infrastructure",
+				Action: func(c *cli.Context) error {
+					newApp(c.String("config")).runCloud()
 					return nil
 				},
 			},

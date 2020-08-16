@@ -26,11 +26,11 @@ func NewFakeAPIRepository(url string, timeout int) CarRepository {
 
 func (t *FakeApiRepository) FindAll() ([]*entity.Car, error) {
 	urlPath := fmt.Sprintf("%s/cars", t.url)
-	config.Logger.Debug(urlPath)
+	config.AppConfig.Logger.Debug(urlPath)
 	req, _ := http.NewRequest("GET", urlPath, nil)
 	resp, _ := t.httpClient.Do(req)
 	if resp.StatusCode != http.StatusOK {
-		config.Logger.WithField("HTTP-Client", "Status").Error("Can not make GET /cars request")
+		config.AppConfig.Logger.WithField("HTTP-Client", "Status").Error("Can not make GET /cars request")
 		return nil, errors.New("Can not make GET /cars request")
 	}
 	defer resp.Body.Close()
@@ -38,7 +38,7 @@ func (t *FakeApiRepository) FindAll() ([]*entity.Car, error) {
 	var carResponse entity.Cars
 	err := json.NewDecoder(resp.Body).Decode(&carResponse)
 	if err != nil {
-		config.Logger.WithField("HTTP-Client", "Status").Fatal("Failed to parse JSON")
+		config.AppConfig.Logger.WithField("HTTP-Client", "Status").Fatal("Failed to parse JSON")
 		return nil, err
 	}
 	var result []*entity.Car
@@ -60,4 +60,8 @@ func (t *FakeApiRepository) Find(id int) (*entity.Car, error) {
 func (t *FakeApiRepository) Create(car *entity.Car) (*entity.Car, error) {
 	car.CarDetail.Id = rand.Intn(100)
 	return car, nil
+}
+
+func (t *FakeApiRepository) Upload(file []byte, fileName string) error {
+	return nil
 }

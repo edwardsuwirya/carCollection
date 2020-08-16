@@ -49,7 +49,7 @@ func (s *Server) Run() {
 	if err != nil {
 		panic(err)
 	}
-	config.Logger.Debug(fmt.Sprintf("Server runs on %s", s.listeningAddress))
+	config.AppConfig.Logger.Debug(fmt.Sprintf("Server runs on %s", s.listeningAddress))
 	if err := http.ListenAndServe(s.listeningAddress, s.router); err != nil {
 		panic(err)
 	}

@@ -31,3 +31,7 @@ func (t *TempRepository) Create(car *entity.Car) (*entity.Car, error) {
 	t.repo = append(t.repo, car)
 	return car, nil
 }
+
+func (t *TempRepository) Upload(file []byte, fileName string) error {
+	panic("Implement me")
+}

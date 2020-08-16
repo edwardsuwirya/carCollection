@@ -6,6 +6,7 @@ import (
 	"github.com/edwardsuwirya/carCollection/entity"
 	"github.com/edwardsuwirya/carCollection/repository"
 	"github.com/edwardsuwirya/carCollection/useCase"
+	"io/ioutil"
 	"strconv"
 	"strings"
 )
@@ -39,8 +40,13 @@ func (c *Cli) PrintAllCarCollection() {
 	}
 }
 
+func (c *Cli) Upload() {
+	f, _ := ioutil.ReadFile("/Users/edwardsuwirya/Pictures/GO_BUILD.png")
+	c.useCase.Upload(f)
+}
+
 func NewCliDelivery(c *config.Config) CarDelivery {
-	config.Logger.Debug("Run Fake API")
+	c.Logger.Debug("Run Fake API")
 	to, _ := strconv.Atoi(c.GetConfigValue("fake_api_timeout"))
 	carrepo := repository.NewFakeAPIRepository(c.GetConfigValue("fake_api_url"), to)
 	carusecase := useCase.NewCarUseCase(carrepo)
@@ -50,16 +56,37 @@ func NewCliDelivery(c *config.Config) CarDelivery {
 }
 
 func NewCliDeliveryTemp(c *config.Config) CarDelivery {
-	config.Logger.Debug("Run CLI Temp")
+	c.Logger.Debug("Run CLI Temp")
 	carrepo := repository.NewTempRepository()
 	carusecase := useCase.NewCarUseCase(carrepo)
 	cli := &Cli{
 		useCase: carusecase,
 	}
 	car01 := entity.Car{CarDetail: entity.CarDetail{
-		Car:          "",
+		Car:          "Honda",
 		CarModel:     "Brio",
 		CarColor:     "",
+		CarModelYear: 1900,
+		CarVin:       "",
+		Price:        "",
+		Availability: false,
+	}}
+	cli.RegisterCar(&car01)
+	cli.Upload()
+	return cli
+}
+
+func NewCliDeliveryCloud(c *config.Config) CarDelivery {
+	c.Logger.Debug("Run CLI Cloud")
+	carrepo := repository.NewCloudRepository()
+	carusecase := useCase.NewCarUseCase(carrepo)
+	cli := &Cli{
+		useCase: carusecase,
+	}
+	car01 := entity.Car{CarDetail: entity.CarDetail{
+		Car:          "Toyota",
+		CarModel:     "Kijang",
+		CarColor:     "Grey",
 		CarModelYear: 1900,
 		CarVin:       "",
 		Price:        "",
@@ -71,5 +98,4 @@ func NewCliDeliveryTemp(c *config.Config) CarDelivery {
 
 func (c *Cli) Run() {
 	c.PrintAllCarCollection()
-
 }

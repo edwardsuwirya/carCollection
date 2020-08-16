@@ -1,36 +1,46 @@
 package config
 
 import (
+	"cloud.google.com/go/firestore"
+	"context"
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"google.golang.org/api/option"
+	"log"
 	"os"
 )
 
 var (
-	Logger   logrus.Logger
-	CfgViper *viper.Viper
+	AppConfig *Config
 )
 
 type Config struct {
-	configFilePath string
+	configFilePath  string
+	CfgViper        *viper.Viper
+	Logger          logrus.Logger
+	ClientStorage   *storage.Client
+	ClientFirestore *firestore.Client
 }
 
 func NewConfig(configFilePath string) *Config {
 	c := Config{configFilePath: configFilePath}
 	c.init()
-	return &c
+	AppConfig = &c
+	return AppConfig
 }
 
-func (c *Config) init() *viper.Viper {
+func (c *Config) init() {
 	viper.SetConfigFile(c.configFilePath)
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}
 
-	CfgViper = viper.GetViper()
-	level := CfgViper.GetString("log_level")
+	c.CfgViper = viper.GetViper()
+	level := c.CfgViper.GetString("log_level")
 	c.logger(level)
-	return CfgViper
+	c.initFirebaseStorage()
 }
 
 func (c *Config) logger(level string) {
@@ -39,7 +49,7 @@ func (c *Config) logger(level string) {
 	if err != nil {
 		panic(err)
 	}
-	Logger = logrus.Logger{
+	c.Logger = logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: logFormat,
 		Level:     logLevel,
@@ -47,5 +57,28 @@ func (c *Config) logger(level string) {
 }
 
 func (c *Config) GetConfigValue(key string) string {
-	return CfgViper.GetString(key)
+	return c.CfgViper.GetString(key)
+}
+
+func (c *Config) initFirebaseStorage() {
+	fbConfig := &firebase.Config{
+		StorageBucket: c.CfgViper.GetString("google_storage_bucket"),
+	}
+	opt := option.WithCredentialsFile(c.CfgViper.GetString("google_credential_path"))
+	app, err := firebase.NewApp(context.Background(), fbConfig, opt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	ctx := context.Background()
+	clientStorage, err := app.Storage(ctx)
+	clientFirestore, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	c.ClientFirestore = clientFirestore
+	c.ClientStorage = clientStorage
+	//bucket, err := client.DefaultBucket()
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
 }
