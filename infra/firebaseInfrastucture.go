@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/edwardsuwirya/carCollection/config"
 	"github.com/edwardsuwirya/carCollection/entity"
+	guuid "github.com/google/uuid"
 	"google.golang.org/api/iterator"
 	"io"
 )
@@ -57,12 +58,13 @@ func (fb *FirebaseInfrastucture) GetAllDocument() ([]*entity.Car, error) {
 	return carResults, nil
 }
 func (fb *FirebaseInfrastucture) CreateDocument(car *entity.Car) (*entity.Car, error) {
-	docRef, _, err := fb.frsclient.Collection(fb.collectionName).Add(fb.ctx, *car)
+	id := guuid.New()
+	docRef, err := fb.frsclient.Collection(fb.collectionName).Doc(fmt.Sprintf("CC-%s", id.String())).Set(fb.ctx, *car)
 	if err != nil {
 		config.AppConfig.Logger.Error(fmt.Sprintf("Failed create document: %v", err))
 		return nil, err
 	}
-	config.AppConfig.Logger.Debug(docRef)
+	config.AppConfig.Logger.Debug("Create timestamp:" + docRef.UpdateTime.String())
 	return car, nil
 }
 func (fb *FirebaseInfrastucture) Upload(fileInput []byte, fileName string) error {

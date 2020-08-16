@@ -9,9 +9,9 @@ type CloudRepository struct {
 	cloud infra.CloudInfrastucture
 }
 
-func NewCloudRepository() CarRepository {
+func NewCloudRepository(c infra.CloudInfrastucture) CarRepository {
 	return &CloudRepository{
-		cloud: infra.NewFirebaseInfrastructure(),
+		cloud: c,
 	}
 }
 

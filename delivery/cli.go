@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/edwardsuwirya/carCollection/config"
 	"github.com/edwardsuwirya/carCollection/entity"
+	"github.com/edwardsuwirya/carCollection/infra"
 	"github.com/edwardsuwirya/carCollection/repository"
 	"github.com/edwardsuwirya/carCollection/useCase"
 	"io/ioutil"
@@ -78,19 +79,20 @@ func NewCliDeliveryTemp(c *config.Config) CarDelivery {
 
 func NewCliDeliveryCloud(c *config.Config) CarDelivery {
 	c.Logger.Debug("Run CLI Cloud")
-	carrepo := repository.NewCloudRepository()
+	cloudInfra := infra.NewFirebaseInfrastructure()
+	carrepo := repository.NewCloudRepository(cloudInfra)
 	carusecase := useCase.NewCarUseCase(carrepo)
 	cli := &Cli{
 		useCase: carusecase,
 	}
 	car01 := entity.Car{CarDetail: entity.CarDetail{
-		Car:          "Toyota",
-		CarModel:     "Kijang",
-		CarColor:     "Grey",
-		CarModelYear: 1900,
+		Car:          "Nissan",
+		CarModel:     "All New Grand Livina",
+		CarColor:     "Blue",
+		CarModelYear: 2016,
 		CarVin:       "",
 		Price:        "",
-		Availability: false,
+		Availability: true,
 	}}
 	cli.RegisterCar(&car01)
 	return cli
